@@ -4,6 +4,8 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
+ * AnnotationVisitor that forwards events to two children.
+ *
  * @author yawkat
  */
 class DualAnnotationVisitor extends AnnotationVisitor {

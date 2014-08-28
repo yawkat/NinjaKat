@@ -14,13 +14,13 @@ public interface UnsafeFunction<T, R> {
         return function.unsafe();
     }
 
-    R apply(T t) throws Exception;
+    R apply(T t) throws Throwable;
 
     default Function<T, R> unsafe() {
         return t -> {
             try {
                 return apply(t);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 UnsafeAccess.UNSAFE.throwException(e);
                 return null; // should never happen
             }

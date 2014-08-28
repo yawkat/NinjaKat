@@ -5,6 +5,7 @@ import at.yawk.ninjakat.rename.descriptor.Identifier;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.objectweb.asm.ClassVisitor;
 
 /**
  * @author yawkat
@@ -21,5 +22,9 @@ public class Remapper {
         }
         log.info("Map " + original + " -> " + remaps.get(original));
         return (D) remaps.getOrDefault(original, original);
+    }
+
+    public ClassVisitor createClassVisitor(ClassVisitor parent) {
+        return new RemappingClassVisitor(parent, this);
     }
 }

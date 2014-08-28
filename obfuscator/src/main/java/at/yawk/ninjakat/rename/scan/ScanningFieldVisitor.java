@@ -11,7 +11,7 @@ import org.objectweb.asm.tree.AnnotationNode;
 /**
  * @author yawkat
  */
-public class ScanningFieldVisitor extends FieldVisitor {
+class ScanningFieldVisitor extends FieldVisitor {
     private final Scanner scanner;
 
     private final ClassInfo clazz;

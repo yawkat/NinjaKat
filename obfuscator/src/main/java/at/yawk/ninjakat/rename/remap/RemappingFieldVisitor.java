@@ -9,7 +9,7 @@ import org.objectweb.asm.Opcodes;
 /**
  * @author yawkat
  */
-public class RemappingFieldVisitor extends FieldVisitor {
+class RemappingFieldVisitor extends FieldVisitor {
     private final Remapper remapper;
 
     private final FieldInfo field;

@@ -14,13 +14,13 @@ public interface UnsafePredicate<T> {
         return predicate.unsafe();
     }
 
-    boolean test(T t) throws Exception;
+    boolean test(T t) throws Throwable;
 
     default Predicate<T> unsafe() {
         return t -> {
             try {
                 return test(t);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 UnsafeAccess.UNSAFE.throwException(e);
                 return false; // should never happen
             }

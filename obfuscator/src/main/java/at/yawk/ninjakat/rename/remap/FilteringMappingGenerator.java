@@ -7,6 +7,8 @@ import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 
 /**
+ * Forwarding MappingGenerator implementation.
+ *
  * @author yawkat
  */
 @RequiredArgsConstructor

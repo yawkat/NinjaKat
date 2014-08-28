@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import ninjakat.DoNotRename;
 
 /**
+ * MappingGenerator instance that doesn't rename constructors or DoNotRename-annotated elements.
+ *
  * @author yawkat
  */
 @Slf4j

@@ -13,6 +13,8 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * A path -> Object cache that auto-expires when the file is changed.
+ *
  * @author yawkat
  */
 @Slf4j
@@ -29,9 +31,11 @@ class FileCache<V> {
                         while (true) {
                             FileTime beforeLoad = Files.getLastModifiedTime(key);
 
-                            V val = generator.apply(key);
+                            V val = generator.unsafe().apply(key);
 
                             FileTime afterLoad = Files.getLastModifiedTime(key);
+
+                            // did the file change while the cache was being built?
                             if (beforeLoad.equals(afterLoad)) {
                                 return new Entry<>(beforeLoad, val);
                             } else {
@@ -46,11 +50,13 @@ class FileCache<V> {
     public V get(Path path) {
         while (true) {
             try {
+                // check for file modification
                 FileTime mod = Files.getLastModifiedTime(path);
                 Entry<V> value = handle.get(path);
                 if (value.time.equals(mod)) {
                     return value.value;
                 } else {
+                    // invalidate cache and retry
                     handle.invalidate(path);
                 }
             } catch (Exception e) {

@@ -12,6 +12,8 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
 
 /**
  * @author yawkat
@@ -35,7 +37,15 @@ public class Scanner {
     }
 
     public <Info extends MemberInfo> void addAlias(Info actual, Info alias) {
-        aliases.put(alias, actual);
         log.info("Alias:\t" + alias + " -> " + actual);
+        aliases.put(alias, actual);
+    }
+
+    public void scan(ClassNode node) {
+        node.accept(new ScanningClassVisitor(null, this));
+    }
+
+    public void scan(ClassReader reader) {
+        reader.accept(new ScanningClassVisitor(null, this), ClassReader.EXPAND_FRAMES);
     }
 }

@@ -6,7 +6,7 @@ import org.objectweb.asm.*;
 /**
  * @author yawkat
  */
-public class RemappingClassVisitor extends ClassVisitor {
+class RemappingClassVisitor extends ClassVisitor {
     private final Remapper remapper;
 
     private ClassDescriptor clazz;

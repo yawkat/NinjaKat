@@ -1,8 +1,6 @@
 package at.yawk.ninjakat.rename.remap;
 
 import at.yawk.ninjakat.rename.descriptor.*;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.objectweb.asm.*;
 
@@ -10,7 +8,7 @@ import org.objectweb.asm.*;
  * @author yawkat
  */
 @Slf4j
-public class RemappingMethodVisitor extends MethodVisitor {
+class RemappingMethodVisitor extends MethodVisitor {
     private final Remapper remapper;
 
     private final MethodInfo method;

@@ -18,10 +18,15 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
+ * Class path entry of a directory with .class files. Also used for jar files via NIO ZipFS.
+ *
  * @author yawkat
  */
 public class DirectoryClassPath extends ClassPath {
     private final Path directory;
+    /**
+     * ClassNode cache.
+     */
     private final FileCache<ClassNode> cache = FileCache.create(p -> {
         try (InputStream in = Files.newInputStream(p)) {
             ClassReader reader = new ClassReader(in);
@@ -36,6 +41,9 @@ public class DirectoryClassPath extends ClassPath {
         this.directory = directory;
     }
 
+    /**
+     * Create a (closeable) class path from a jar.
+     */
     public static ClassPath forJar(Optional<ClassPath> parent, Path jarPath) throws IOException {
         URI uri = URI.create("jar:" + jarPath.toUri());
         FileSystem fs = FileSystems.newFileSystem(uri, new HashMap<>());
@@ -60,15 +68,15 @@ public class DirectoryClassPath extends ClassPath {
     }
 
     @Override
-    public Stream<ClassNode> getClasses() {
-        return Stream.concat(
-                super.getClasses(),
-                listRecur(directory)
-                        .filter(UnsafePredicate.unsafe(p -> Files.isRegularFile(p) && p.toString().endsWith(".class")))
-                        .map(cache::get)
-        );
+    public Stream<ClassNode> getManagedClasses() {
+        return listRecur(directory)
+                .filter(UnsafePredicate.unsafe(p -> Files.isRegularFile(p) && p.toString().endsWith(".class")))
+                .map(cache::get);
     }
 
+    /**
+     * Recursive stream of files in a directory, excluding the directories themselves.
+     */
     private static Stream<Path> listRecur(Path p) {
         if (Files.isDirectory(p)) {
             try {

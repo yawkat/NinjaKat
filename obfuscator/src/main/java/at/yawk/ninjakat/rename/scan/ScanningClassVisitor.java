@@ -12,7 +12,7 @@ import org.objectweb.asm.tree.AnnotationNode;
  * @author yawkat
  */
 @Slf4j
-public class ScanningClassVisitor extends ClassVisitor {
+class ScanningClassVisitor extends ClassVisitor {
     private final Scanner scanner;
 
     private ClassInfo clazz;

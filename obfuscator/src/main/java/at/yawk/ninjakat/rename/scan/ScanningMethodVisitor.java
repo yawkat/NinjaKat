@@ -14,7 +14,7 @@ import org.objectweb.asm.tree.AnnotationNode;
  * @author yawkat
  */
 @Slf4j
-public class ScanningMethodVisitor extends MethodVisitor {
+class ScanningMethodVisitor extends MethodVisitor {
     private final Scanner scanner;
 
     private final ClassInfo clazz;

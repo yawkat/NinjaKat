@@ -18,7 +18,14 @@ public abstract class ClassPath implements AutoCloseable {
     }
 
     public Stream<ClassNode> getClasses() {
-        return parent.map(ClassPath::getClasses).orElse(Stream.empty());
+        return Stream.concat(
+                parent.map(ClassPath::getClasses).orElse(Stream.empty()),
+                getManagedClasses()
+        );
+    }
+
+    public Stream<ClassNode> getManagedClasses() {
+        return Stream.empty();
     }
 
     @Override
