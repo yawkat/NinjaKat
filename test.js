@@ -21,7 +21,7 @@ function random_name_supplier() {
 
 obfuscator.remap({
     in: "test/target/test-1.0-SNAPSHOT.jar",
-    path: [],
+    // path: [],
     out: "test/target/test-1.0-SNAPSHOT-o.jar",
     class_mapper: function(c) {
         return random_name_supplier();
