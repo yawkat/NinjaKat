@@ -19,17 +19,17 @@ function random_name_supplier() {
     };
 }
 
-obfuscator.remap(
-    "test/target/test-1.0-SNAPSHOT.jar",
-    [],
-    "test/target/test-1.0-SNAPSHOT-o.jar",
-    function(c) {
+obfuscator.remap({
+    in: "test/target/test-1.0-SNAPSHOT.jar",
+    path: [],
+    out: "test/target/test-1.0-SNAPSHOT-o.jar",
+    class_mapper: function(c) {
         return random_name_supplier();
     },
-    function(m) {
+    method_mapper: function(m) {
         return random_name_supplier();
     },
-    function(f) {
+    field_mapper: function(f) {
         return random_name_supplier();
     }
-);
+});

@@ -20,13 +20,14 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.ScriptFunction;
-import jdk.nashorn.internal.runtime.Undefined;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.objectweb.asm.ClassVisitor;
@@ -41,12 +42,23 @@ import org.objectweb.asm.tree.ClassNode;
 public class ActionProvider {
     private final Path workingDir;
 
-    public void remap(String inJar,
-                      List<String> path,
-                      String outJar,
-                      Function<ClassDescriptor, Supplier<String>> classMapper,
-                      Function<MethodInfo, Supplier<String>> methodMapper,
-                      Function<FieldInfo, Supplier<String>> fieldMapper) throws IOException {
+    @SuppressWarnings("unchecked")
+    public void remap(ScriptObjectMirror o) throws IOException {
+        // input jar
+        String inJar = (String) o.get("in");
+        // classpath, defaults to []
+        List<String> path = (Optional.ofNullable((ScriptObjectMirror) o.get("path")))
+                .map(m -> m.to(List.class))
+                .orElse(Collections.<String>emptyList());
+        // output jar
+        String outJar = (String) o.get("out");
+        // class mapper
+        Function classMapper = ((ScriptObjectMirror) o.get("class_mapper")).to(Function.class);
+        // method mapper
+        Function methodMapper = ((ScriptObjectMirror) o.get("method_mapper")).to(Function.class);
+        // field mapper
+        Function fieldMapper = ((ScriptObjectMirror) o.get("field_mapper")).to(Function.class);
+
         Optional<ClassPath> parent = Optional.empty();
         for (String pathEntry : path) {
             parent = Optional.of(DirectoryClassPath.forJar(parent, resolve(pathEntry)));
@@ -124,7 +136,7 @@ public class ActionProvider {
 
     @SuppressWarnings("unchecked")
     private <T> Supplier<T> jsToSupplier(Object o) {
-        if (o instanceof Undefined) {
+        if (ScriptObjectMirror.isUndefined(o)) {
             return null;
         }
         if (o instanceof ScriptFunction) {
