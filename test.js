@@ -1,6 +1,9 @@
 log.info("Starting remapper...");
 
-chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW"
+chars = [];
+for (var i = 0xf000; i < 0xffff; i++) {
+    chars.push(String.fromCharCode(i));
+}
 
 function random_name_supplier() {
     var i = 0;
@@ -8,7 +11,7 @@ function random_name_supplier() {
         var res = ""
         var j = i;
         do {
-            res += chars.charAt(j % chars.length);
+            res += chars[j % chars.length];
             j = Math.floor(j / chars.length);
         } while (j > 0);
         i++;

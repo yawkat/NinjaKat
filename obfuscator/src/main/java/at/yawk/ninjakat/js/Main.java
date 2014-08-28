@@ -73,6 +73,8 @@ public class Main {
 
         try (Reader r = Files.newBufferedReader(scriptFile)) {
             runner.execute(r);
+        } catch (Throwable t) {
+            log.error("Failed to execute script", t);
         }
     }
 }

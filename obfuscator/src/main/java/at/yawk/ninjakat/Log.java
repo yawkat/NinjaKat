@@ -69,7 +69,27 @@ public class Log {
     private static class NinjaFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
-            return record.getLevel() + "\t" + record.getMessage() + "\n";
+            StringBuilder builder = new StringBuilder();
+            builder.append(record.getLevel())
+                    .append('\t')
+                    .append(record.getMessage())
+                    .append('\n');
+            Throwable thrown = record.getThrown();
+            while (thrown != null) {
+                builder.append(thrown.getClass().getName());
+                String message = thrown.getMessage();
+                if (message != null) {
+                    builder.append(": ").append(message);
+                }
+                builder.append('\n');
+                Arrays.stream(thrown.getStackTrace())
+                        .forEach(ele -> builder.append('\t').append(ele.toString()).append('\n'));
+                thrown = thrown.getCause();
+                if (thrown != null) {
+                    builder.append("Caused by: ");
+                }
+            }
+            return builder.toString();
         }
     }
 }
