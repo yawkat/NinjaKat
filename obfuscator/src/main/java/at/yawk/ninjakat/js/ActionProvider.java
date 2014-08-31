@@ -11,20 +11,20 @@ import at.yawk.ninjakat.rename.remap.Remapper;
 import at.yawk.ninjakat.rename.remap.SafeMappingGenerator;
 import at.yawk.ninjakat.rename.scan.Scanner;
 import at.yawk.ninjakat.rename.unsafe.UnsafeSupplier;
+import at.yawk.ninjakat.renamelocal.LocalRenamer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandle;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.ScriptFunction;
@@ -50,8 +50,6 @@ public class ActionProvider {
         List<String> path = (Optional.ofNullable((ScriptObjectMirror) o.get("path")))
                 .map(m -> m.to(List.class))
                 .orElse(Collections.<String>emptyList());
-        // output jar
-        String outJar = (String) o.get("out");
         // class mapper
         Function classMapper = ((ScriptObjectMirror) o.get("class_mapper")).to(Function.class);
         // method mapper
@@ -80,34 +78,44 @@ public class ActionProvider {
 
             Supplier<String> nameGen;
             if (ident instanceof ClassDescriptor) {
-                nameGen = jsToSupplier(classMapper.apply((ClassDescriptor) ident));
+                nameGen = jsToSupplier(classMapper.apply(ident));
             } else if (ident instanceof MethodInfo) {
-                nameGen = jsToSupplier(methodMapper.apply((MethodInfo) ident));
+                nameGen = jsToSupplier(methodMapper.apply(ident));
             } else if (ident instanceof FieldInfo) {
-                nameGen = jsToSupplier(fieldMapper.apply((FieldInfo) ident));
+                nameGen = jsToSupplier(fieldMapper.apply(ident));
             } else {
                 log.error("Unsupported identifier " + ident);
                 return Optional.empty();
             }
 
-            if (nameGen == null) {
-                return Optional.empty();
-            }
-
-            String name;
-            do {
-                name = nameGen.get();
-
-                if (name == null) {
-                    return Optional.empty();
-                }
-            } while (!check.test(name));
-            return Optional.of(name);
+            return findMatch(check, nameGen);
         };
 
         Remapper remapper = new BasicRemapper(scanner, new SafeMappingGenerator(generator));
 
-        Path toPath = resolve(outJar);
+        map(o, managed, remapper::createClassVisitor);
+    }
+
+    private Optional<String> findMatch(Predicate<String> condition, Supplier<String> nameGen) {
+        if (nameGen == null) {
+            return Optional.empty();
+        }
+
+        String name;
+        do {
+            name = nameGen.get();
+
+            if (name == null) {
+                return Optional.empty();
+            }
+        } while (!condition.test(name));
+        return Optional.of(name);
+    }
+
+    private void map(ScriptObjectMirror o, ClassPath managed, Function<ClassNode, ClassVisitor> visitorFactory)
+            throws IOException {
+        // output jar
+        Path toPath = resolve((String) o.get("out"));
 
         Files.deleteIfExists(toPath);
 
@@ -116,7 +124,7 @@ public class ActionProvider {
         try (FileSystem out = FileSystems.newFileSystem(URI.create("jar:" + toPath.toUri()), properties)) {
             managed.getManagedClasses().forEach(c -> {
                 ClassNode next = new ClassNode();
-                ClassVisitor visitor = remapper.createClassVisitor(next);
+                ClassVisitor visitor = visitorFactory.apply(next);
                 c.accept(visitor);
 
                 ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -128,6 +136,20 @@ public class ActionProvider {
                 }
             });
         }
+    }
+
+    public void rename_locals(ScriptObjectMirror o) throws IOException {
+        // input jar
+        String inJar = (String) o.get("in");
+        // mapper
+        BiFunction mapper = ((ScriptObjectMirror) o.get("mapper")).to(BiFunction.class);
+
+        LocalRenamer renamer = new LocalRenamer((method, name, meta, checker) -> {
+            Supplier<String> supplier = jsToSupplier(mapper.apply(method, name));
+            return findMatch(checker, supplier);
+        });
+
+        map(o, DirectoryClassPath.forJar(Optional.empty(), Paths.get(inJar)), renamer::createClassVisitor);
     }
 
     private Path resolve(String name) {

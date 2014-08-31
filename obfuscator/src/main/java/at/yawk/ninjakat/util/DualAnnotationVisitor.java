@@ -1,4 +1,4 @@
-package at.yawk.ninjakat.rename.scan;
+package at.yawk.ninjakat.util;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Opcodes;
@@ -8,7 +8,7 @@ import org.objectweb.asm.Opcodes;
  *
  * @author yawkat
  */
-class DualAnnotationVisitor extends AnnotationVisitor {
+public class DualAnnotationVisitor extends AnnotationVisitor {
     private final AnnotationVisitor a;
     private final AnnotationVisitor b;
 
@@ -19,11 +19,13 @@ class DualAnnotationVisitor extends AnnotationVisitor {
     }
 
     public static AnnotationVisitor create(AnnotationVisitor a, AnnotationVisitor b) {
-        return a == null ?
-                b :
-                b == null ?
-                        a :
-                        new DualAnnotationVisitor(a, b);
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
+        return new DualAnnotationVisitor(a, b);
     }
 
     @Override

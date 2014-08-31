@@ -2,6 +2,7 @@ package at.yawk.ninjakat.rename.scan;
 
 import at.yawk.ninjakat.rename.descriptor.*;
 import at.yawk.ninjakat.rename.path.ClassPathUtil;
+import at.yawk.ninjakat.util.DualAnnotationVisitor;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
