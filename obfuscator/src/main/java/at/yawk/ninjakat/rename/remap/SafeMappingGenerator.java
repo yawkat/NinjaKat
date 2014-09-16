@@ -5,9 +5,9 @@ import at.yawk.ninjakat.rename.descriptor.IdentifierMeta;
 import at.yawk.ninjakat.rename.descriptor.MethodInfo;
 import java.util.Optional;
 import java.util.function.Predicate;
-import jdk.nashorn.internal.codegen.types.Type;
 import lombok.extern.slf4j.Slf4j;
 import ninjakat.DoNotRename;
+import org.objectweb.asm.Type;
 
 /**
  * MappingGenerator instance that doesn't rename constructors or DoNotRename-annotated elements.
@@ -16,7 +16,7 @@ import ninjakat.DoNotRename;
  */
 @Slf4j
 public class SafeMappingGenerator extends FilteringMappingGenerator {
-    private static final String DO_NOT_RENAME = Type.typeFor(DoNotRename.class).getDescriptor();
+    private static final String DO_NOT_RENAME = Type.getDescriptor(DoNotRename.class);
 
     public SafeMappingGenerator(MappingGenerator handle) {
         super(handle);
